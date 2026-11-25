@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Scheduler: schedule WhatsApp voice notes on Android</title>
+<meta name="description" content="Record your message just like you do on WhatsApp, choose a contact and set the time. When it's time, your phone rings and asks for your approval. One tap sends your voice note as a normal WhatsApp voice message.">
+<meta property="og:title" content="Voice Scheduler for Android">
+<meta property="og:description" content="Schedule WhatsApp voice notes. Approve with one tap when they're due.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F3F0E8">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F0E8; --surface:#FBFAF6; --ink:#1A1A17; --muted:#5B5A52; --line:#D9D4C7;
+  --accent:#17603F; --accent-hover:#124D33; --on-accent:#FFFFFF;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px; --s12:48px; --s16:64px; --s20:80px; --s24:96px;
+  --font:"Schibsted Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:24px;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 var(--s6)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* nav */
+.nav{display:flex;align-items:center;justify-content:space-between;height:var(--s16);border-bottom:1px solid var(--line)}
+.brand{font-weight:700;font-size:18px;letter-spacing:-0.01em;text-decoration:none}
+.nav ul{display:flex;gap:var(--s8);list-style:none;margin:0;padding:0}
+.nav a.l{text-decoration:none;color:var(--muted);font-size:15px}
+.nav a.l:hover{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,0.75fr);gap:var(--s16);padding:var(--s20) 0 var(--s24);align-items:start}
+h1{font-size:clamp(36px,5.4vw,60px);line-height:1.04;letter-spacing:-0.025em;font-weight:700;margin:0 0 var(--s6);max-width:14ch}
+.lede{font-size:20px;line-height:32px;color:var(--ink);max-width:48ch;margin:0 0 var(--s10)}
+.btn{display:inline-flex;align-items:center;min-height:56px;padding:0 var(--s8);background:var(--accent);color:var(--on-accent);font-weight:600;font-size:18px;border-radius:6px;text-decoration:none;transition:background .15s}
+.btn:hover{background:var(--accent-hover)}
+.meta{margin:var(--s4) 0 0;color:var(--muted);font-size:15px}
+.meta a{text-underline-offset:3px}
+
+/* phone */
+.phone-col{display:flex;flex-direction:column;gap:var(--s4);align-items:flex-start}
+.phone{width:100%;max-width:296px;background:#1D1D1A;color:#F3F0E8;border-radius:32px;border:1px solid var(--ink);padding:var(--s12) var(--s5) var(--s8);min-height:440px;display:flex;flex-direction:column}
+.clock{font-size:64px;line-height:64px;font-weight:500;letter-spacing:-0.03em;margin:0}
+.date{margin:var(--s2) 0 var(--s10);color:#B9B6AA;font-size:15px}
+.note{background:#2A2A26;border-radius:12px;padding:var(--s4)}
+.note .app{margin:0 0 var(--s2);font-size:13px;line-height:16px;color:#B9B6AA}
+.note h3{margin:0;font-size:17px;line-height:24px;font-weight:600}
+.note p{margin:var(--s1) 0 var(--s4);font-size:14px;line-height:20px;color:#D8D5C9}
+.acts{display:flex;gap:var(--s2)}
+.acts span{flex:1;text-align:center;padding:var(--s3) var(--s2);font-size:14px;line-height:20px;font-weight:600;border-radius:8px}
+.acts .skip{border:1px solid #55554E;color:#D8D5C9;flex:0 0 auto;padding-left:var(--s4);padding-right:var(--s4)}
+.acts .go{background:#2E9E6B;color:#0E1A14}
+.lockhint{margin:var(--s4) 0 0;font-size:14px;color:#B9B6AA}
+.cap{margin:0;color:var(--muted);font-size:14px;line-height:20px;max-width:296px}
+
+/* sections */
+section{padding:var(--s20) 0;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);gap:var(--s16)}
+h2{font-size:32px;line-height:40px;letter-spacing:-0.02em;font-weight:700;margin:0 0 var(--s4)}
+.sub{color:var(--muted);margin:0;max-width:36ch}
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:var(--s12) 1fr;padding:var(--s6) 0;border-top:1px solid var(--line)}
+ol.steps li:first-child{border-top:0;padding-top:0}
+ol.steps li::before{content:counter(s);font-family:var(--mono);font-size:16px;color:var(--accent);line-height:28px}
+ol.steps h3{margin:0 0 var(--s2);font-size:20px;line-height:28px;font-weight:600}
+ol.steps p{margin:0;color:var(--muted);max-width:56ch}
+
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:var(--s12) var(--s12)}
+.facts h3{margin:0 0 var(--s2);font-size:18px;line-height:24px;font-weight:600}
+.facts p{margin:0;color:var(--muted)}
+
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;vertical-align:top;padding:var(--s4) var(--s4) var(--s4) 0;border-top:1px solid var(--line)}
+th{font-weight:600;width:34%}
+td{color:var(--muted)}
+tr:last-child th,tr:last-child td{border-bottom:1px solid var(--line)}
+
+.install ol{margin:0;padding-left:var(--s6);max-width:60ch}
+.install li{padding-left:var(--s2);margin-bottom:var(--s4)}
+.install li::marker{font-family:var(--mono);color:var(--accent)}
+.warn{margin-top:var(--s8);padding:var(--s4) var(--s5);border-left:4px solid var(--accent);background:var(--surface);max-width:60ch}
+.warn p{margin:0}
+.hash{margin-top:var(--s8)}
+.hash p{margin:0 0 var(--s2);color:var(--muted);font-size:15px}
+.hash code{display:block;font-family:var(--mono);font-size:13px;line-height:20px;word-break:break-all;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:var(--s3) var(--s4)}
+
+details{border-top:1px solid var(--line)}
+details:last-child{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;padding:var(--s5) 0;font-weight:600;font-size:18px;display:flex;justify-content:space-between;gap:var(--s4)}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:var(--mono);color:var(--accent);font-weight:400}
+details[open] summary::after{content:"\2212"}
+details p{margin:0 0 var(--s5);color:var(--muted);max-width:60ch}
+
+footer{border-top:1px solid var(--line);padding:var(--s10) 0 var(--s16);color:var(--muted);font-size:15px}
+footer .row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--s4)}
+footer a{text-underline-offset:3px}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;gap:var(--s12);padding:var(--s12) 0 var(--s16)}
+  .grid{grid-template-columns:1fr;gap:var(--s8)}
+  section{padding:var(--s16) 0}
+  .facts{grid-template-columns:1fr;gap:var(--s8)}
+  .nav ul{gap:var(--s5)}
+  .nav li.hide{display:none}
+  th{width:40%}
+}
+@media (max-width:480px){
+  .wrap{padding:0 var(--s5)}
+  .btn{width:100%;justify-content:center}
+  th,td{display:block;width:100%;padding-right:0}
+  th{padding-bottom:var(--s1);border-bottom:0}
+  td{border-top:0;padding-top:0}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="nav">
+    <a class="brand" href="#top">Voice Scheduler</a>
+    <nav aria-label="Main"><ul>
+      <li><a class="l" href="#how">How it works</a></li>
+      <li class="hide"><a class="l" href="#permissions">Permissions</a></li>
+      <li><a class="l" href="#install">Install</a></li>
+      <li class="hide"><a class="l" href="#faq">FAQ</a></li>
+    </ul></nav>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div>
+        <h1>Schedule WhatsApp voice notes.</h1>
+        <p class="lede">Pick an audio file, a contact and a time. When the time comes, your phone rings and asks you to approve. One tap sends it as a normal WhatsApp voice message.</p>
+        <a class="btn" href="voice-scheduler-2.0.apk" download>Download APK</a>
+        <p class="meta">Version 2.0 &middot; 50.3 MB &middot; Android 10 or newer &middot; <a href="#install">Install steps</a></p>
+      </div>
+      <div class="phone-col">
+        <div class="phone" role="img" aria-label="Lock screen showing a Voice Scheduler notification: Voice note ready, with Skip and Approve and Send buttons">
+          <p class="clock">9:00</p>
+          <p class="date">Thursday, 26 November</p>
+          <div class="note">
+            <p class="app">Voice Scheduler &middot; now</p>
+            <h3>Voice note ready</h3>
+            <p>To Sarah &middot; 0:42</p>
+            <div class="acts"><span class="skip">Skip</span><span class="go">Approve &amp; Send</span></div>
+          </div>
+          <p class="lockhint">Unlock your phone to send</p>
+        </div>
+        <p class="cap">The approval screen at the scheduled time. Shown on the lock screen, with sample contact.</p>
+      </div>
+    </div>
+
+    <section id="how">
+      <div class="grid">
+        <div>
+          <h2>How it works</h2>
+          <p class="sub">Four steps. Nothing is sent until you approve it.</p>
+        </div>
+        <ol class="steps">
+          <li><div><h3>Record a voice note</h3><p>Record your voice directly in the app, just like WhatsApp, or choose an existing audio file from your phone. Your message is sent as a WhatsApp voice message (Opus), not as a file attachment.</p></div></li>
+          <li><div><h3>Pick who gets it</h3><p>Choose someone from your phone contacts, or save a profile for people you message often. Works with WhatsApp and WhatsApp Business.</p></div></li>
+          <li><div><h3>Choose a time</h3><p>Pick any future date and time. Tap Schedule Message, and your voice note will wait until it's time to send.</p></div></li>
+          <li><div><h3>Approve when it rings</h3><p>At that time an alarm sounds and the approval screen opens, even on the lock screen. Tap Approve &amp; Send. If the phone is locked, it asks for your PIN or fingerprint first. A note you don't approve within an hour is marked missed.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <div class="grid">
+        <div><h2>Good to know</h2></div>
+        <div class="facts">
+          <div><h3>Each note is sent once</h3><p>After it goes out it's marked Sent and can never fire again.</p></div>
+          <div><h3>You stay in control</h3><p>Nothing leaves your phone without your tap on the approval screen.</p></div>
+          <div><h3>Test it first</h3><p>Schedule a note two minutes ahead and watch the whole flow before you rely on it.</p></div>
+          <div><h3>Android only</h3><p>Needs Android 10 or newer, with WhatsApp or WhatsApp Business installed.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="permissions">
+      <div class="grid">
+        <div>
+          <h2>What it asks for, and why</h2>
+          <p class="sub">The app needs more access than most. Here is each permission in plain terms.</p>
+        </div>
+        <table>
+          <tbody>
+            <tr><th scope="row">Accessibility service</th><td>Taps the Send button inside WhatsApp at your scheduled time. Only active while a scheduled voice note is being sent.</td></tr>
+            <tr><th scope="row">Display over other apps, full-screen notifications</th><td>Shows the approval screen when the phone is locked.</td></tr>
+            <tr><th scope="row">Notifications</th><td>Tells you when a note is ready, sent, or missed.</td></tr>
+            <tr><th scope="row">Battery: unrestricted</th><td>Keeps the alarm on time instead of being delayed by battery saving.</td></tr>
+            <tr><th scope="row">Run at startup</th><td>Restores your schedule after the phone restarts.</td></tr>
+            <tr><th scope="row">Wake lock, vibrate, foreground service</th><td>Wakes the screen and rings the alarm, and keeps the send running until it finishes.</td></tr>
+            <tr><th scope="row">Microphone</th><td>Lets the app record audio.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="install" class="install">
+      <div class="grid">
+        <div>
+          <h2>Install it</h2>
+          <p class="sub">Installed straight from the file, not from the Play Store.</p>
+        </div>
+        <div>
+          <ol>
+            <li>Download the APK with the button at the top of this page.</li>
+            <li>Open the file. When Android asks, allow your browser or Files app to install unknown apps.</li>
+            <li>Open Voice Scheduler and grant the permissions above: notifications, accessibility, display over other apps, and unrestricted battery.</li>
+            <li>Schedule a test note two minutes from now.</li>
+          </ol>
+          <div class="warn"><p>This is a debug build, so Android or Play Protect may show a warning before installing. The source code is public on <a href="https://github.com/umercode555/Whatsappvoicenotescheduler/tree/main/VoiceScheduler">GitHub</a>.</p></div>
+          <div class="hash">
+            <p>SHA-256 of voice-scheduler-2.0.apk, to check your download:</p>
+            <code>9080f3a6e5d0d7d2eab30275a0a2eae3654b90be6786cbbf7d2bf6c2449756b3</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="grid">
+        <div><h2>Questions</h2></div>
+        <div>
+          <details><summary>Does it send messages without me?</summary><p>No. At the scheduled time you get an approval screen and have to tap Approve &amp; Send. If you don't, the note is marked missed after an hour.</p></details>
+          <details><summary>Why does it need an accessibility service?</summary><p>WhatsApp doesn't let other apps send a message on a schedule. Voice Scheduler opens the chat with your audio and taps Send for you. The service is only active while a scheduled note is going out.</p></details>
+          <details><summary>Does the app connect to the internet?</summary><p>The app doesn't request internet permission. Your audio is handed to WhatsApp on your phone, and the app itself uploads nothing.</p></details>
+          <details><summary>Does it work with WhatsApp Business?</summary><p>Yes. It works with both WhatsApp and WhatsApp Business.</p></details>
+          <details><summary>Is there an iPhone version?</summary><p>No. Voice Scheduler is Android only.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap row">
+    <span>Voice Scheduler 2.0 &middot; com.umer.voicesched</span>
+    <span> &middot; <a href="voice-scheduler-2.0.apk" download>voice-scheduler-2.0.apk</a></span>
+  </div>
+</footer>
+</body>
+</html>
